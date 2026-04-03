@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday | 2026 Interactive Experience</title>
+    <!-- External Resources -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@200;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #bc75ff;
+            --accent-glow: rgba(188, 117, 255, 0.3);
+            --text-main: #ffffff;
+            --text-dim: #a1a1aa;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none; /* Custom cursor */
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Custom Cursor --- */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        /* --- Background Particles --- */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            filter: blur(1px);
+        }
+
+        /* --- Intro Loader --- */
+        #loader {
+            height: 100vh;
+            width: 100%;
+            position: fixed;
+            z-index: 1000;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loader-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: -1px;
+            opacity: 0;
+        }
+
+        .enter-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: white;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            display: none;
+        }
+
+        .enter-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        /* --- Hero Section --- */
+        section {
+            min-height: 100vh;
+            padding: 100px 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 800;
+            line-height: 0.9;
+            margin-bottom: 20px;
+            background: linear-gradient(to bottom, #fff 40%, var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-sub {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+
+        /* --- Bento Grid Section --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 300px);
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .bento-item {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bento-item:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+        }
+
+        .bento-1 { grid-column: span 2; }
+        .bento-2 { grid-column: span 2; }
+        .bento-3 { grid-column: span 1; }
+        .bento-4 { grid-column: span 3; }
+
+        .bento-item i {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+
+        .bento-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .bento-item p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* --- Interactive Wish Section --- */
+        .wish-section {
+            text-align: center;
+            align-items: center;
+        }
+
+        .candle-container {
+            width: 100px;
+            height: 150px;
+            background: var(--glass);
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            margin-top: 50px;
+            border: 1px solid var(--border);
+        }
+
+        .flame {
+            width: 30px;
+            height: 45px;
+            background: radial-gradient(circle, #ffde75 0%, #ff5e00 100%);
+            border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 40px #ff5e00;
+            animation: flicker 1s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.1) skewX(2deg); }
+        }
+
+        .wish-btn {
+            margin-top: 80px;
+            padding: 20px 40px;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 100px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* --- Final Message --- */
+        .final-message {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .final-message h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-glow);
+            color: var(--accent);
+        }
+
+        footer {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .bento-1, .bento-2, .bento-3, .bento-4 { grid-column: span 1; height: 250px; }
+            .hero-title { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <canvas id="canvas-bg"></canvas>
+
+    <!-- Preloader -->
+    <div id="loader">
+        <div class="loader-text">HAPPY BIRTHDAY</div>
+        <button class="enter-btn" onclick="startExperience()">Unlock Experience</button>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="hero">
+            <h1 class="hero-title">Happy <br> Birthday, <br><span class="glow-text">Special One.</span></h1>
+            <p class="hero-sub">Welcome to your digital space. A journey through why you're incredible, crafted just for you.</p>
+        </section>
+
+        <!-- Bento Grid Section -->
+        <section>
+            <div class="grid-container">
+                <div class="bento-item bento-1">
+                    <i data-lucide="heart"></i>
+                    <h3>The Soul</h3>
+                    <p>You have a way of making the world feel quieter and more beautiful just by being in it.</p>
+                </div>
+                <div class="bento-item bento-2">
+                    <i data-lucide="zap"></i>
+                    <h3>The Energy</h3>
+                    <p>Radiant, infectious, and entirely unique. You don't just walk into a room; you light it up.</p>
+                </div>
+                <div class="bento-item bento-3">
+                    <i data-lucide="camera"></i>
+                    <h3>Memories</h3>
+                    <p>Every moment spent with you is a favorite.</p>
+                </div>
+                <div class="bento-item bento-4">
+                    <i data-lucide="stars"></i>
+                    <h3>2026 Vision</h3>
+                    <p>This year is about growth, magic, and everything you've ever dreamed of coming to fruition. You're ready.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Wish -->
+        <section class="wish-section">
+            <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Make a Digital Wish</h2>
+            <p style="color: var(--text-dim);">Close your eyes and think of something beautiful.</p>
+            <div class="candle-container">
+                <div class="flame" id="flame"></div>
+            </div>
+            <button class="wish-btn" onclick="blowCandle()">I'VE MADE A WISH</button>
+        </section>
+
+        <!-- Final Message -->
+        <section class="final-message">
+            <h2>"To the person who makes <br> forever look like a <span class="glow-text">good idea</span>."</h2>
+            <p style="font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto;">
+                Thank you for being exactly who you are. May your day be as spectacular as your smile and as deep as your heart. 
+                Happy Birthday!
+            </p>
+        </section>
+
+        <footer>
+            DESIGNED FOR YOU • 2026 • WITH LOVE
+        </footer>
+    </main>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- Custom Cursor Logic ---
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.1
+            });
+        });
+
+        // --- Canvas Background (Floating Particles) ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random();
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(188, 117, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animateParticles();
+
+        // --- Loader Animation ---
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+            tl.to(".loader-text", { opacity: 1, duration: 1, y: -20 })
+              .to(".enter-btn", { display: 'block', opacity: 1, duration: 0.5 });
+        });
+
+        function startExperience() {
+            gsap.to("#loader", { 
+                y: '-100%', 
+                duration: 1.2, 
+                ease: "power4.inOut",
+                onComplete: () => {
+                    document.getElementById('loader').style.display = 'none';
+                    revealHero();
+                }
+            });
+        }
+
+        // --- Content Reveal Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        function revealHero() {
+            gsap.from(".hero-title", { 
+                y: 100, 
+                opacity: 0, 
+                duration: 1.5, 
+                ease: "power4.out" 
+            });
+            gsap.to(".hero-sub", { 
+                y: 0, 
+                opacity: 1, 
+                duration: 1.5, 
+                delay: 0.5, 
+                ease: "power4.out" 
+            });
+        }
+
+        // Scroll Reveal for Bento items
+        gsap.from(".bento-item", {
+            scrollTrigger: {
+                trigger: ".grid-container",
+                start: "top 80%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power3.out"
+        });
+
+        // --- Interactive Candle Function ---
+        function blowCandle() {
+            const flame = document.getElementById('flame');
+            const btn = document.querySelector('.wish-btn');
+            
+            gsap.to(flame, { 
+                scale: 0, 
+                opacity: 0, 
+                duration: 1, 
+                ease: "power4.out" 
+            });
+
+            btn.innerText = "WISH SENT TO THE STARS";
+            btn.style.background = "#bc75ff";
+            btn.style.color = "white";
+
+            // Confetti effect
+            for(let i=0; i<50; i++) {
+                createFirework();
+            }
+        }
+
+        function createFirework() {
+            const f = document.createElement('div');
+            f.style.position = 'fixed';
+            f.style.left = '50%';
+            f.style.top = '70%';
+            f.style.width = '5px';
+            f.style.height = '5px';
+            f.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            f.style.borderRadius = '50%';
+            f.style.zIndex = '100';
+            document.body.appendChild(f);
+
+            gsap.to(f, {
+                x: (Math.random() - 0.5) * 600,
+                y: (Math.random() - 0.5) * 600,
+                opacity: 0,
+                duration: 2,
+                ease: "power2.out",
+                onComplete: () => f.remove()
+            });
+        }
+
+        // Subtle hover effect for cursor on interactive elements
+        const interactives = document.querySelectorAll('.bento-item, button, .glow-text');
+        interactives.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                gsap.to(cursor, { scale: 3, background: 'rgba(188, 117, 255, 0.5)', mixBlendMode: 'normal' });
+            });
+            el.addEventListener('mouseleave', () => {
+                gsap.to(cursor, { scale: 1, background: '#fff', mixBlendMode: 'difference' });
+            });
+        });
+
+    </script>
+</body>
+</html>
